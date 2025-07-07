@@ -108,7 +108,7 @@
                 <div class="p-6 border-b border-gray-700"><h3 class="text-2xl font-semibold text-white">Adicionar Novo Chamado</h3></div>
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label for="add-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="number" id="add-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="add-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="text" id="add-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                         <div><label for="add-cliente" class="block text-sm font-medium text-gray-300 mb-1">Cliente</label><input type="text" id="add-cliente" name="cliente" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     </div>
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -121,6 +121,7 @@
                     </div>
                     <div><label for="add-assunto" class="block text-sm font-medium text-gray-300 mb-1">Assunto</label><input type="text" id="add-assunto" name="assunto" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     <div><label for="add-descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição do Assunto</label><textarea id="add-descricao" name="descricao" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="add-resposta" class="block text-sm font-medium text-gray-300 mb-1">Resposta (Obs / Descrição)</label><textarea id="add-resposta" name="resposta" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
                     <div><label for="add-status" class="block text-sm font-medium text-gray-300 mb-1">Status</label><select id="add-status" name="status" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Em análise</option><option>Em atraso</option><option>Concluído</option></select></div>
                 </div>
                 <div class="bg-gray-700/50 p-4 flex justify-end items-center gap-4">
@@ -139,7 +140,7 @@
                 <div class="p-6 space-y-4">
                     <input type="hidden" id="edit-ticketId" name="ticketId">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><label for="edit-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="number" id="edit-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="edit-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="text" id="edit-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                         <div><label for="edit-cliente" class="block text-sm font-medium text-gray-300 mb-1">Cliente</label><input type="text" id="edit-cliente" name="cliente" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     </div>
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -149,34 +150,12 @@
                     <div><label for="edit-responsavel" class="block text-sm font-medium text-gray-300 mb-1">Assessor Responsável</label><input type="text" id="edit-responsavel" name="responsavel" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     <div><label for="edit-assunto" class="block text-sm font-medium text-gray-300 mb-1">Assunto</label><input type="text" id="edit-assunto" name="assunto" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
                     <div><label for="edit-descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição do Assunto</label><textarea id="edit-descricao" name="descricao" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="edit-resposta" class="block text-sm font-medium text-gray-300 mb-1">Resposta (Obs / Descrição)</label><textarea id="edit-resposta" name="resposta" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
                     <div><label for="edit-status" class="block text-sm font-medium text-gray-300 mb-1">Status</label><select id="edit-status" name="status" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Em análise</option><option>Em atraso</option><option>Concluído</option></select></div>
                 </div>
                 <div class="bg-gray-700/50 p-4 flex justify-end items-center gap-4">
                     <button type="button" id="cancelEditButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md transition-colors">Cancelar</button>
                     <button type="submit" id="saveEditButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2"><span id="saveEditButtonText">Salvar Alterações</span><div id="saveEditSpinner" class="hidden w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div></button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal para Editar Descrição -->
-    <div id="descriptionModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden modal-backdrop">
-        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform scale-95 modal-content">
-            <form id="descriptionForm">
-                <div class="p-6 border-b border-gray-700">
-                    <h3 class="text-2xl font-semibold text-white">Ver / Editar Descrição</h3>
-                    <p id="descriptionModalSubject" class="text-sm text-gray-400 mt-1"></p>
-                </div>
-                <div class="p-6">
-                    <input type="hidden" id="descriptionTicketId">
-                    <textarea id="descriptionTextarea" name="description" rows="8" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-                <div class="bg-gray-700/50 p-4 flex justify-end items-center gap-4">
-                    <button type="button" id="cancelDescriptionButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md transition-colors">Fechar</button>
-                    <button type="submit" id="saveDescriptionButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2">
-                        <span id="saveDescriptionButtonText">Salvar Descrição</span>
-                        <div id="saveDescriptionSpinner" class="hidden w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
-                    </button>
                 </div>
             </form>
         </div>
@@ -217,11 +196,9 @@
         const addTicketModal = document.getElementById('addTicketModal');
         const editTicketModal = document.getElementById('editTicketModal');
         const deleteConfirmModal = document.getElementById('deleteConfirmModal');
-        const descriptionModal = document.getElementById('descriptionModal');
         // Formulários
         const addTicketForm = document.getElementById('addTicketForm');
         const editTicketForm = document.getElementById('editTicketForm');
-        const descriptionForm = document.getElementById('descriptionForm');
         // Botões
         const addTicketButton = document.getElementById('addTicketButton');
         const cancelDeleteButton = document.getElementById('cancelDeleteButton');
@@ -283,12 +260,6 @@
                 const dataAbertura = ticket['Data da abertura'] ? new Date(ticket['Data da abertura']).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
                 
                 let actionButtons = `
-                    <button data-ticket-id="${ticket['Nº do chamado']}" 
-                            data-description="${ticket['Descrição do assunto'] || ''}" 
-                            data-subject="${ticket['Assunto']}" 
-                            class="description-btn p-1 text-gray-400 hover:text-indigo-400 transition-colors" title="Ver/Editar Descrição">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z"></path></svg>
-                    </button>
                     <button data-ticket-id="${ticket['Nº do chamado']}" class="edit-btn p-1 text-gray-400 hover:text-indigo-400 transition-colors" title="Editar Chamado">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                     </button>
@@ -410,6 +381,7 @@
             document.getElementById('edit-responsavel').value = ticket['Assessor Responsável'];
             document.getElementById('edit-assunto').value = ticket['Assunto'];
             document.getElementById('edit-descricao').value = ticket['Descrição do assunto'];
+            document.getElementById('edit-resposta').value = ticket['Obs / Descrição'];
             document.getElementById('edit-status').value = ticket['Status'];
             toggleModal(editTicketModal, true);
         }
@@ -429,12 +401,10 @@
             
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
-            let action;
-            if (form.id === 'addTicketForm') action = 'addTicket';
-            else if (form.id === 'editTicketForm') action = 'editTicket';
-            else if (form.id === 'descriptionForm') action = 'updateDescription';
-
+            const action = form.id === 'addTicketForm' ? 'addTicket' : 'editTicket';
+            
             const payload = { action, ...data };
+
             await sendActionToScript(payload);
             toggleModal(modal, false);
 
@@ -456,16 +426,12 @@
             document.getElementById('cancelEditButton').addEventListener('click', () => toggleModal(editTicketModal, false));
             editTicketModal.addEventListener('click', (e) => { if (e.target === editTicketModal) toggleModal(editTicketModal, false); });
 
-            document.getElementById('cancelDescriptionButton').addEventListener('click', () => toggleModal(descriptionModal, false));
-            descriptionModal.addEventListener('click', (e) => { if (e.target === descriptionModal) toggleModal(descriptionModal, false); });
-
             cancelDeleteButton.addEventListener('click', () => toggleModal(deleteConfirmModal, false));
             deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) toggleModal(deleteConfirmModal, false); });
 
             // Listeners dos Formulários
             addTicketForm.addEventListener('submit', handleFormSubmit);
             editTicketForm.addEventListener('submit', handleFormSubmit);
-            descriptionForm.addEventListener('submit', handleFormSubmit);
             
             // Listener para os cards de filtro
             dashboardCards.addEventListener('click', (e) => {
@@ -497,13 +463,6 @@
                     ticketIdToDelete = ticketId;
                     document.getElementById('deleteTicketIdText').textContent = `#${ticketId}`;
                     toggleModal(deleteConfirmModal, true);
-                }
-
-                if (button.classList.contains('description-btn')) {
-                    document.getElementById('descriptionTicketId').value = ticketId;
-                    document.getElementById('descriptionModalSubject').textContent = `Assunto: ${button.dataset.subject}`;
-                    document.getElementById('descriptionTextarea').value = button.dataset.description;
-                    toggleModal(descriptionModal, true);
                 }
             });
 
