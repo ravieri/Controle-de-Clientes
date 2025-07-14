@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle de Chamados</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .modal-backdrop, #overdue-popup {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        .status-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .status-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .highlight-row {
+            background-color: #4338ca !important; /* Indigo 700 */
+            transition: background-color 0.5s ease-in-out;
+        }
+        .highlight-row:hover {
+            background-color: #4f46e5 !important; /* Indigo 600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div id="app" class="container mx-auto p-4 md:p-8">
+        
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-white mb-2">Painel de Controle de Chamados</h1>
+            <p class="text-gray-400">Status dos chamados da assessoria em tempo real</p>
+        </header>
+
+        <div id="dashboard-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+            <div data-status="Em Análise" class="status-card cursor-pointer bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-5 flex items-center">
+                <div class="mr-4"><div class="bg-yellow-500/20 rounded-full p-3"><svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 5.523-4.477 10-10 10S1 17.523 1 12 5.477 2 11 2s10 4.477 10 10z"></path></svg></div></div>
+                <div><div class="text-gray-400 text-sm">Em Análise</div><div id="card-analise-count" class="text-2xl font-bold text-white">0</div></div>
+            </div>
+            <div data-status="Em Atraso" class="status-card cursor-pointer bg-red-500/10 border border-red-500/30 rounded-lg p-5 flex items-center">
+                 <div class="mr-4"><div class="bg-red-500/20 rounded-full p-3"><svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div></div>
+                <div><div class="text-gray-400 text-sm">Em Atraso</div><div id="card-atraso-count" class="text-2xl font-bold text-white">0</div></div>
+            </div>
+            <div data-status="Concluído" class="status-card cursor-pointer bg-blue-500/10 border border-blue-500/30 rounded-lg p-5 flex items-center">
+                 <div class="mr-4"><div class="bg-blue-500/20 rounded-full p-3"><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div></div>
+                <div><div class="text-gray-400 text-sm">Concluído</div><div id="card-concluido-count" class="text-2xl font-bold text-white">0</div></div>
+            </div>
+        </div>
+
+        <div class="mb-6 bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col md:flex-row items-center gap-4">
+            <div class="relative w-full">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                <input type="text" id="searchInput" placeholder="Pesquisar por assunto, cliente ou responsável..." class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <button id="addTicketButton" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center gap-2 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Adicionar Chamado
+            </button>
+            <button id="refreshButton" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center gap-2 transition-colors duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>Atualizar
+            </button>
+        </div>
+
+        <div id="loading" class="text-center py-10"><p class="text-lg text-gray-400">Carregando dados da planilha...</p></div>
+        <div id="error" class="hidden text-center py-10 bg-red-900/50 p-4 rounded-lg"><h3 class="text-xl font-bold text-red-400">Ocorreu um erro</h3><p id="errorMessage" class="text-red-300 mt-2"></p></div>
+
+        <div id="table-container" class="overflow-x-auto bg-gray-800 rounded-lg shadow-lg hidden">
+            <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-gray-700/50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nº</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Cliente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Assunto</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Responsável</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Abertura</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Prazo Final</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-table-body" class="bg-gray-800 divide-y divide-gray-700"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addTicketModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden modal-backdrop">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform scale-95 modal-content">
+            <form id="addTicketForm">
+                <div class="p-6 border-b border-gray-700"><h3 class="text-2xl font-semibold text-white">Adicionar Novo Chamado</h3></div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="add-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="text" id="add-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="add-cliente" class="block text-sm font-medium text-gray-300 mb-1">Cliente</label><input type="text" id="add-cliente" name="cliente" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="add-data_abertura" class="block text-sm font-medium text-gray-300 mb-1">Data da Abertura</label><input type="datetime-local" id="add-data_abertura" name="data_abertura" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="add-responsavel" class="block text-sm font-medium text-gray-300 mb-1">Assessor Responsável</label><input type="text" id="add-responsavel" name="responsavel" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-4">
+                        <div><label for="add-prazo_valor" class="block text-sm font-medium text-gray-300 mb-1">Prazo</label><input type="number" id="add-prazo_valor" name="prazo_valor" required min="1" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="add-prazo_unidade" class="block text-sm font-medium text-gray-300 mb-1">Tipo de Prazo</label><select id="add-prazo_unidade" name="prazo_unidade" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Dias úteis</option><option>Dias corridos</option></select></div>
+                    </div>
+                    <div><label for="add-assunto" class="block text-sm font-medium text-gray-300 mb-1">Assunto</label><input type="text" id="add-assunto" name="assunto" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label for="add-descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição do Assunto</label><textarea id="add-descricao" name="descricao" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="add-resposta" class="block text-sm font-medium text-gray-300 mb-1">Resposta (Obs / Descrição)</label><textarea id="add-resposta" name="resposta" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="add-status" class="block text-sm font-medium text-gray-300 mb-1">Status</label><select id="add-status" name="status" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Em análise</option><option>Em atraso</option><option>Concluído</option></select></div>
+                </div>
+                <div class="bg-gray-700/50 p-4 flex justify-end items-center gap-4">
+                    <button type="button" id="cancelButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md transition-colors">Cancelar</button>
+                    <button type="submit" id="saveButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2"><span id="saveButtonText">Salvar Chamado</span><div id="saveSpinner" class="hidden w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editTicketModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden modal-backdrop">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl transform scale-95 modal-content">
+            <form id="editTicketForm">
+                 <div class="p-6 border-b border-gray-700"><h3 class="text-2xl font-semibold text-white">Editar Chamado</h3></div>
+                <div class="p-6 space-y-4">
+                    <input type="hidden" id="edit-ticketId" name="ticketId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="edit-numero_chamado" class="block text-sm font-medium text-gray-300 mb-1">Nº do Chamado</label><input type="text" id="edit-numero_chamado" name="numero_chamado" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="edit-cliente" class="block text-sm font-medium text-gray-300 mb-1">Cliente</label><input type="text" id="edit-cliente" name="cliente" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label for="edit-data_abertura" class="block text-sm font-medium text-gray-300 mb-1">Data da Abertura</label><input type="datetime-local" id="edit-data_abertura" name="data_abertura" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                        <div><label for="edit-prazo_final" class="block text-sm font-medium text-gray-300 mb-1">Prazo Final</label><input type="datetime-local" id="edit-prazo_final" name="prazo_final" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    </div>
+                    <div><label for="edit-responsavel" class="block text-sm font-medium text-gray-300 mb-1">Assessor Responsável</label><input type="text" id="edit-responsavel" name="responsavel" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label for="edit-assunto" class="block text-sm font-medium text-gray-300 mb-1">Assunto</label><input type="text" id="edit-assunto" name="assunto" required class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></div>
+                    <div><label for="edit-descricao" class="block text-sm font-medium text-gray-300 mb-1">Descrição do Assunto</label><textarea id="edit-descricao" name="descricao" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="edit-resposta" class="block text-sm font-medium text-gray-300 mb-1">Resposta (Obs / Descrição)</label><textarea id="edit-resposta" name="resposta" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div>
+                    <div><label for="edit-status" class="block text-sm font-medium text-gray-300 mb-1">Status</label><select id="edit-status" name="status" class="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"><option>Em análise</option><option>Em atraso</option><option>Concluído</option></select></div>
+                </div>
+                <div class="bg-gray-700/50 p-4 flex justify-end items-center gap-4">
+                    <button type="button" id="cancelEditButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-md transition-colors">Cancelar</button>
+                    <button type="submit" id="saveEditButton" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center gap-2"><span id="saveEditButtonText">Salvar Alterações</span><div id="saveEditSpinner" class="hidden w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin"></div></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden modal-backdrop">
+        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-md transform scale-95 modal-content">
+            <div class="p-6 text-center">
+                <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <h3 class="text-2xl font-semibold text-white mb-2">Confirmar Exclusão</h3>
+                <p class="text-gray-400">Você tem certeza que deseja excluir o chamado <strong id="deleteTicketIdText" class="font-bold"></strong>? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="bg-gray-700/50 p-4 flex justify-center items-center gap-4">
+                <button type="button" id="cancelDeleteButton" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-md transition-colors">Cancelar</button>
+                <button type="button" id="confirmDeleteButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md transition-colors">Excluir</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-800 text-white py-3 px-5 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-40"><p id="toastMessage"></p></div>
+
+    <div id="overdue-popup" class="hidden fixed bottom-5 right-5 w-full max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 transform translate-y-20 opacity-0">
+        <div class="p-4">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="ml-3 w-0 flex-1">
+                    <p class="text-lg font-medium text-white">Chamados em Atraso!</p>
+                    <div id="overdue-list" class="mt-2 text-sm space-y-2 max-h-48 overflow-y-auto">
+                        </div>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button id="close-overdue-popup" class="inline-flex text-gray-400 hover:text-white">
+                        <span class="sr-only">Fechar</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- CONFIGURAÇÕES ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw_c6hDPTb4b2Fci5mLYQSJSG-tWYfg4EFbrq-SYpwRcl7lnJdXUfRycrbWy32sSPv4/exec';
+
+        // --- ELEMENTOS DO DOM ---
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const errorMessageP = document.getElementById('errorMessage');
+        const tableContainer = document.getElementById('table-container');
+        const tableBody = document.getElementById('tickets-table-body');
+        const searchInput = document.getElementById('searchInput');
+        const refreshButton = document.getElementById('refreshButton');
+        const dashboardCards = document.getElementById('dashboard-cards');
+        // Modais
+        const addTicketModal = document.getElementById('addTicketModal');
+        const editTicketModal = document.getElementById('editTicketModal');
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        // Formulários
+        const addTicketForm = document.getElementById('addTicketForm');
+        const editTicketForm = document.getElementById('editTicketForm');
+        // Botões
+        const addTicketButton = document.getElementById('addTicketButton');
+        const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+        const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        // ** NOVO: Elementos do Pop-up de Atrasos **
+        const overduePopup = document.getElementById('overdue-popup');
+        const overdueList = document.getElementById('overdue-list');
+        const closeOverduePopupButton = document.getElementById('close-overdue-popup');
+
+
+        let allTicketsData = [];
+        let activeFilter = null;
+        let ticketIdToDelete = null;
+
+        // --- FUNÇÕES ---
+
+        function showToast(message, isError = false) {
+            toastMessage.textContent = message;
+            toast.className = toast.className.replace(/bg-\w+-\d+/, isError ? 'bg-red-600' : 'bg-green-600');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        
+        function getStatusInfo(ticket) {
+            const now = new Date();
+            const prazoFinal = ticket['Prazo Final'] ? new Date(ticket['Prazo Final']) : null;
+            let currentStatus = ticket['Status']?.toLowerCase().trim() || 'em análise';
+            if (currentStatus !== 'concluído' && prazoFinal && now > prazoFinal) {
+                currentStatus = 'em atraso';
+            }
+            switch (currentStatus) {
+                case 'em atraso': return { text: 'Em Atraso', badgeClass: 'bg-red-500/20 text-red-300' };
+                case 'concluído': return { text: 'Concluído', badgeClass: 'bg-blue-500/20 text-blue-300' };
+                case 'em análise': return { text: 'Em Análise', badgeClass: 'bg-yellow-500/20 text-yellow-300' };
+                default: return { text: ticket['Status'], badgeClass: 'bg-gray-500/20 text-gray-300' };
+            }
+        }
+
+        function updateDashboardCards(tickets) {
+            const statusCounts = { 'Em Análise': 0, 'Em Atraso': 0, 'Concluído': 0 };
+            tickets.forEach(ticket => {
+                const statusInfo = getStatusInfo(ticket);
+                if (statusInfo.text in statusCounts) statusCounts[statusInfo.text]++;
+            });
+            document.getElementById('card-analise-count').textContent = statusCounts['Em Análise'];
+            document.getElementById('card-atraso-count').textContent = statusCounts['Em Atraso'];
+            document.getElementById('card-concluido-count').textContent = statusCounts['Concluído'];
+        }
+
+        function renderTable(tickets) {
+            tableContainer.style.display = 'block';
+            tableBody.innerHTML = '';
+            if (tickets.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">Nenhum chamado encontrado para o filtro atual.</td></tr>`;
+                return;
+            }
+            tickets.forEach(ticket => {
+                const statusInfo = getStatusInfo(ticket);
+                const prazoFinal = ticket['Prazo Final'] ? new Date(ticket['Prazo Final']).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
+                const dataAbertura = ticket['Data da abertura'] ? new Date(ticket['Data da abertura']).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
+                
+                let actionButtons = `
+                    <button data-ticket-id="${ticket['Nº do chamado']}" class="edit-btn p-1 text-gray-400 hover:text-indigo-400 transition-colors" title="Editar Chamado">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button data-ticket-id="${ticket['Nº do chamado']}" class="delete-btn p-1 text-gray-400 hover:text-red-500 transition-colors" title="Excluir Chamado">
+                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                if (statusInfo.text !== 'Concluído') {
+                    actionButtons = `
+                        <button data-ticket-id="${ticket['Nº do chamado']}" class="concluir-btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-3 rounded-md transition-colors" title="Concluir Chamado">
+                            Concluir
+                        </button>
+                    ` + actionButtons;
+                }
+
+                // ** MODIFICADO: Adicionado 'data-row-id' para identificar a linha **
+                const row = `
+                    <tr data-row-id="${ticket['Nº do chamado']}" class="hover:bg-gray-700/50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">${ticket['Nº do chamado']}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${ticket['Cliente']}</td>
+                        <td class="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">${ticket['Assunto']}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${ticket['Assessor Responsável']}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${dataAbertura}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${prazoFinal}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.badgeClass}">${statusInfo.text}</span></td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 flex items-center gap-2">${actionButtons}</td>
+                    </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function applyFiltersAndRender() {
+            let filteredTickets = [...allTicketsData];
+            const searchTerm = searchInput.value.toLowerCase();
+            if (searchTerm) {
+                filteredTickets = filteredTickets.filter(ticket => Object.values(ticket).some(val => val?.toString().toLowerCase().includes(searchTerm)));
+            }
+            if (activeFilter) {
+                filteredTickets = filteredTickets.filter(ticket => getStatusInfo(ticket).text === activeFilter);
+            }
+            document.querySelectorAll('.status-card').forEach(card => {
+                card.classList.toggle('ring-2', card.dataset.status === activeFilter);
+                card.classList.toggle('ring-indigo-400', card.dataset.status === activeFilter);
+            });
+            renderTable(filteredTickets);
+        }
+
+        async function fetchData() {
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            tableContainer.style.display = 'none';
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                if (!response.ok) throw new Error(`A resposta da rede não foi 'ok': ${response.statusText}`);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    allTicketsData = result.data;
+                    updateDashboardCards(allTicketsData);
+                    applyFiltersAndRender();
+                    // ** NOVO: Verifica e mostra o pop-up de atrasos após carregar os dados **
+                    const overdueTickets = allTicketsData.filter(ticket => getStatusInfo(ticket).text === 'Em Atraso');
+                    showOverduePopup(overdueTickets);
+                } else {
+                    throw new Error(result.message || 'Ocorreu um erro no script do Google.');
+                }
+            } catch (error) {
+                errorMessageP.textContent = `Falha ao carregar dados: ${error.message}. Verifique a URL do Apps Script e as permissões.`;
+                errorDiv.style.display = 'block';
+                console.error("Erro ao buscar dados:", error);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        function toggleModal(modal, show) {
+            const content = modal.querySelector('.modal-content');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+        
+        async function sendActionToScript(payload) {
+             try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                showToast(`Ação executada com sucesso para o chamado #${payload.ticketId || payload.numero_chamado}.`);
+                setTimeout(fetchData, 1500);
+            } catch (error) {
+                console.error('Erro ao executar ação:', error);
+                showToast(`Erro ao executar ação para o chamado #${payload.ticketId || payload.numero_chamado}.`, true);
+            }
+        }
+
+        function isoToDatetimeLocal(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            return date.toISOString().slice(0, 16);
+        }
+        
+        function populateEditForm(ticketId) {
+            const ticket = allTicketsData.find(t => t['Nº do chamado'] == ticketId);
+            if (!ticket) return;
+            document.getElementById('edit-ticketId').value = ticketId;
+            document.getElementById('edit-numero_chamado').value = ticket['Nº do chamado'];
+            document.getElementById('edit-cliente').value = ticket['Cliente'];
+            document.getElementById('edit-data_abertura').value = isoToDatetimeLocal(ticket['Data da abertura']);
+            document.getElementById('edit-prazo_final').value = isoToDatetimeLocal(ticket['Prazo Final']);
+            document.getElementById('edit-responsavel').value = ticket['Assessor Responsável'];
+            document.getElementById('edit-assunto').value = ticket['Assunto'];
+            document.getElementById('edit-descricao').value = ticket['Descrição do assunto'];
+            document.getElementById('edit-resposta').value = ticket['Obs / Descrição'];
+            document.getElementById('edit-status').value = ticket['Status'];
+            toggleModal(editTicketModal, true);
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const modal = form.closest('.modal-backdrop');
+            const saveBtn = form.querySelector('button[type="submit"]');
+            const saveBtnText = saveBtn.querySelector('span');
+            const saveBtnSpinner = saveBtn.querySelector('div');
+            const originalText = saveBtnText.textContent;
+
+            saveBtn.disabled = true;
+            saveBtnSpinner.classList.remove('hidden');
+            saveBtnText.textContent = 'Salvando...';
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const action = form.id === 'addTicketForm' ? 'addTicket' : 'editTicket';
+            
+            const payload = { action, ...data };
+
+            await sendActionToScript(payload);
+            toggleModal(modal, false);
+
+            if (action === 'addTicket') {
+                form.reset(); 
+            }
+
+            saveBtn.disabled = false;
+            saveBtnSpinner.classList.add('hidden');
+            saveBtnText.textContent = originalText;
+        }
+
+        // --- ** NOVAS FUNÇÕES PARA O POP-UP DE ATRASOS ** ---
+
+        function calculateOverdueTime(prazoFinal) {
+            const now = new Date();
+            const prazo = new Date(prazoFinal);
+            const diffMs = now - prazo;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffDays > 0) {
+                return `atrasado há ${diffDays} dia(s)`;
+            }
+            if (diffHours > 0) {
+                return `atrasado há ${diffHours} hora(s)`;
+            }
+            return `atrasado há menos de 1 hora`;
+        }
+
+        function showOverduePopup(overdueTickets) {
+            if (overdueTickets.length === 0) {
+                return; // Não mostra o pop-up se não houver atrasos
+            }
+
+            overdueList.innerHTML = ''; // Limpa a lista anterior
+
+            overdueTickets.forEach(ticket => {
+                const timeText = calculateOverdueTime(ticket['Prazo Final']);
+                const listItem = document.createElement('a');
+                listItem.href = '#';
+                listItem.className = 'block p-2 rounded-md hover:bg-gray-700 cursor-pointer';
+                listItem.dataset.ticketId = ticket['Nº do chamado'];
+                listItem.innerHTML = `
+                    <p class="font-medium text-gray-200">Chamado #${ticket['Nº do chamado']}</p>
+                    <p class="text-gray-400">${ticket['Cliente']} - ${timeText}</p>
+                `;
+                overdueList.appendChild(listItem);
+            });
+
+            overduePopup.classList.remove('hidden');
+            setTimeout(() => {
+                overduePopup.classList.remove('translate-y-20', 'opacity-0');
+            }, 10);
+        }
+
+
+        function initializeApp() {
+            fetchData();
+            refreshButton.addEventListener('click', fetchData);
+            searchInput.addEventListener('input', applyFiltersAndRender);
+            
+            // Listeners dos Modais
+            addTicketButton.addEventListener('click', () => toggleModal(addTicketModal, true));
+            document.getElementById('cancelButton').addEventListener('click', () => toggleModal(addTicketModal, false));
+            addTicketModal.addEventListener('click', (e) => { if (e.target === addTicketModal) toggleModal(addTicketModal, false); });
+            
+            document.getElementById('cancelEditButton').addEventListener('click', () => toggleModal(editTicketModal, false));
+            editTicketModal.addEventListener('click', (e) => { if (e.target === editTicketModal) toggleModal(editTicketModal, false); });
+
+            cancelDeleteButton.addEventListener('click', () => toggleModal(deleteConfirmModal, false));
+            deleteConfirmModal.addEventListener('click', (e) => { if (e.target === deleteConfirmModal) toggleModal(deleteConfirmModal, false); });
+
+            // Listeners dos Formulários
+            addTicketForm.addEventListener('submit', handleFormSubmit);
+            editTicketForm.addEventListener('submit', handleFormSubmit);
+            
+            // Listener para os cards de filtro
+            dashboardCards.addEventListener('click', (e) => {
+                const card = e.target.closest('.status-card');
+                if (!card) return;
+                const statusToFilter = card.dataset.status;
+                activeFilter = (activeFilter === statusToFilter) ? null : statusToFilter;
+                applyFiltersAndRender();
+            });
+
+            // Listeners da Tabela (Ações)
+            tableBody.addEventListener('click', function(e) {
+                const button = e.target.closest('button');
+                if (!button) return;
+
+                const ticketId = button.dataset.ticketId;
+
+                if (button.classList.contains('concluir-btn')) {
+                    button.textContent = '...';
+                    button.disabled = true;
+                    sendActionToScript({ action: 'updateStatus', ticketId: ticketId, newStatus: 'Concluído' });
+                }
+                
+                if (button.classList.contains('edit-btn')) {
+                    populateEditForm(ticketId);
+                }
+
+                if (button.classList.contains('delete-btn')) {
+                    ticketIdToDelete = ticketId;
+                    document.getElementById('deleteTicketIdText').textContent = `#${ticketId}`;
+                    toggleModal(deleteConfirmModal, true);
+                }
+            });
+
+            confirmDeleteButton.addEventListener('click', async () => {
+                if (ticketIdToDelete) {
+                    await sendActionToScript({ action: 'deleteTicket', ticketId: ticketIdToDelete });
+                    toggleModal(deleteConfirmModal, false);
+                    ticketIdToDelete = null;
+                }
+            });
+
+            // --- ** NOVOS EVENT LISTENERS PARA O POP-UP ** ---
+            
+            const hideOverduePopup = () => {
+                overduePopup.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    overduePopup.classList.add('hidden');
+                }, 300);
+            }
+
+            closeOverduePopupButton.addEventListener('click', hideOverduePopup);
+            
+            // Listener para clicar num item da lista de atrasos
+            overduePopup.addEventListener('click', (e) => {
+                const targetLink = e.target.closest('a[data-ticket-id]');
+                if (!targetLink) return;
+                
+                e.preventDefault();
+                const ticketId = targetLink.dataset.ticketId;
+                const rowToHighlight = document.querySelector(`tr[data-row-id='${ticketId}']`);
+
+                // Remove o destaque de outras linhas
+                document.querySelectorAll('tr.highlight-row').forEach(row => row.classList.remove('highlight-row'));
+
+                if (rowToHighlight) {
+                    rowToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    rowToHighlight.classList.add('highlight-row');
+
+                    // Remove o destaque após alguns segundos para não ficar permanente
+                    setTimeout(() => {
+                        rowToHighlight.classList.remove('highlight-row');
+                    }, 5000);
+                }
+                hideOverduePopup();
+            });
+
+            // Listener para fechar o pop-up clicando fora
+            document.addEventListener('click', (e) => {
+                if (!overduePopup.classList.contains('hidden') && !overduePopup.contains(e.target)) {
+                    hideOverduePopup();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+</body>
+</html>
